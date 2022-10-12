@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.dao.ShopCarMapper">
+<!--加入购物车-->
+    <insert id="saveShopCar">
+        insert into ES_SHOPCAR values(es_shopcar_id.nextval,#{num} ,#{bookId},#{customerId})
+    </insert>
+
+<!--    更新数据书本的数量,这里是直接在原来的ShopCar对象的基础上把num修改，再把修改后的ShopCar对象的参数加入到购物车-->
+    <update id="updateShopCar">
+        update ES_SHOPCAR set NUM=#{num} where CUSTOMER_ID=#{customerId} AND BOOK_ID=#{bookId}
+    </update>
+
+
+
+
+    <resultMap id="queryShopCarByCidAndBIdMap" type="com.briup.bean.ShopCar">
+        <id property="id" column="ID"/>
+        <result property="num" column="NUM"/>
+        <result property="bookId" column="BOOK_ID"/>
+        <result property="customerId" column="CUSTOMER_ID"/>
+    </resultMap>
+<!--通过cid和bid查询数据库中用一个用户是否加入的是同一个书，是的话直接更新数据（num相加）-->
+    <select id="queryShopCarByCidAndBId" resultMap="queryShopCarByCidAndBIdMap">
+        select * from ES_SHOPCAR where CUSTOMER_ID=#{cid} AND BOOK_ID=#{bid}
+    </select>
+
+
+    <resultMap id="findShopCarsByCustomerbook" type="com.briup.bean.ShopCar">
+        <id property="id" column="ID"/>
+        <result property="num" column="NUM"/>
+        <result property="customerId" column="CUSTOMER_ID"/>
+<!--        一个ShopCar对象对应一个book对象，一对一，以这里查询到的BOOK_ID为条件查询书并封装为对象-->
+        <association property="book" column="BOOK_ID" select="selectBook"/>
+    </resultMap>
+
+<!--    与book对象有关的查询和result映射-->
+    <select id="selectBook" resultMap="Book">
+        select * from es_book where BOOKID = #{BOOK_ID}
+    </select>
+    <resultMap id="Book" type="com.briup.bean.Book">
+        <id property="id" column="BOOKID"/>
+        <result property="name" column="NAME"/>
+        <result property="price" column="PRICE"/>
+        <result property="author" column="AUTHOR"/>
+        <result property="publisher" column="PUBLISHER"/>
+        <result property="pubDate" column="PUBDATE" />
+        <result property="description" column="DESCRIPTION"/>
+        <result property="image" column="IMAGE"/>
+    </resultMap>
+<!--    根据传入的customerid查询对应客户的购物车的信息，购物车中的书单独封装为书对象-->
+    <select id="findShopCarsByCustomer" resultMap="findShopCarsByCustomerbook" >
+        select * from ES_SHOPCAR es,ES_BOOK eb
+        where es.book_id = eb.bookid and CUSTOMER_ID = #{id}
+    </select>
+
+<!--   根据用户id和书本id删除购物车信息 对应购物车页面的取消按钮-->
+    <delete id="deleteShopCarByCidAndBId">
+        delete from ES_SHOPCAR where  CUSTOMER_ID=#{cid} AND BOOK_ID=#{bid}
+    </delete>
+
+    <delete id="deleteShopCarByCid">
+        delete from ES_SHOPCAR WHERE CUSTOMER_ID=#{id}
+    </delete>
+</mapper>

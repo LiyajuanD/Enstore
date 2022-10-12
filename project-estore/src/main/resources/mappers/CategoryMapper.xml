@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.dao.CategoryMapper">
+
+    <resultMap id="Category" type="com.briup.bean.Category">
+        <id column="P_ID" property="id"/>
+        <result column="P_NAME" property="name"/>
+        <result column="P_DESCRIPTION" property="description"/>
+
+        <collection property="categories" ofType="com.briup.bean.Category">
+            <id column="S_ID" property="id"/>
+            <result column="S_NAME" property="name"/>
+            <result column="S_DESCRIPTION" property="description"/>
+        </collection>
+    </resultMap>
+    <select id="findAllCategorys" resultMap="Category">
+        select
+            ec1.categoryId p_id,
+            ec1.name p_name,
+            ec1.description p_description,
+            ec2.categoryId s_id,
+            ec2.name s_name,
+            ec2.description s_description
+        FROM es_category ec1,es_category ec2
+        where ec1.categoryId = ec2.parent_id
+    </select>
+</mapper>

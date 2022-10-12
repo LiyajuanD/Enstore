@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.dao.BookMapper">
+
+<!--    书的结果映射-->
+    <resultMap id="AllBooks" type="com.briup.bean.Book">
+        <id property="id" column="BOOKID"/>
+        <result property="name" column="NAME"/>
+        <result property="price" column="PRICE"/>
+        <result property="author" column="AUTHOR"/>
+        <result property="publisher" column="PUBLISHER"/>
+        <result property="pubDate" column="PUBDATE" />
+        <result property="description" column="DESCRIPTION"/>
+        <result property="image" column="IMAGE"/>
+<!--一对一查询-->
+        <association property="category" column="category_id" select="getCategory"/>
+
+     </resultMap>
+
+<!--    嵌套查询，把上面查询的category_id去查询category并封装为对象-->
+    <select id="getCategory" resultMap="category">
+        select * from ES_CATEGORY where CATEGORYID = #{category_id}
+    </select>
+<!--    category的映射-->
+    <resultMap id="category" type="com.briup.bean.Category">
+        <id column="CATEGORYID" property="id"/>
+        <result column="NAME" property="name"/>
+        <result column="DESCRIPTION" property="description"/>
+    </resultMap>
+
+<!--    查询书名并显示在首页-->
+    <select id="findAllBooks" resultMap="AllBooks">
+        select * from ES_BOOK
+    </select>
+
+
+<!--    在主页上点击图书图片或点击“更多精彩点击进入”跳转到图书详情页并展示具体详情 这里依旧用到多表查询，可直接复用上面的代码 用同一个resultMap-->
+    <select id="findBookById" resultMap="AllBooks">
+        select * from ES_BOOK where BOOKID=${bookid}
+    </select>
+</mapper>
